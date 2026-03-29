@@ -17,7 +17,7 @@ import os
 
 load_dotenv()
 
-# Dedicated async loop for backend tasks    
+#async loop for backend tasks    
 _ASYNC_LOOP = asyncio.new_event_loop()
 _ASYNC_THREAD = threading.Thread(target=_ASYNC_LOOP.run_forever, daemon=True)
 _ASYNC_THREAD.start()
@@ -36,10 +36,6 @@ def submit_async_task(coro):
     return _submit_async(coro)
 
 
-# -------------------
-# 1. LLM
-# -------------------
-# llm = ChatOpenAI()
 llm = ChatOpenAI(
     model="meta-llama/llama-3-8b-instruct",
     openai_api_key=os.getenv("OPENROUTER_API_KEY"),
@@ -51,9 +47,7 @@ llm = ChatOpenAI(
     }
 )
 
-# -------------------
-# 2. Tools
-# -------------------
+
 search_tool = DuckDuckGoSearchRun(region="us-en")
 
 
@@ -95,15 +89,10 @@ mcp_tools = load_mcp_tools()
 tools = [search_tool, get_stock_price, *mcp_tools]
 llm_with_tools = llm.bind_tools(tools) if tools else llm
 
-# -------------------
-# 3. State
-# -------------------
 class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
-# -------------------
-# 4. Nodes
-# -------------------
+#Nodes
 async def chat_node(state: ChatState):
     """LLM node that may answer or request a tool call."""
     messages = state["messages"]
@@ -113,9 +102,7 @@ async def chat_node(state: ChatState):
 
 tool_node = ToolNode(tools) if tools else None
 
-# -------------------
-# 5. Checkpointer
-# -------------------
+#Checkpointer
 
 
 async def _init_checkpointer():
@@ -125,9 +112,7 @@ async def _init_checkpointer():
 
 checkpointer = run_async(_init_checkpointer())
 
-# -------------------
-# 6. Graph
-# -------------------
+#Graph
 graph = StateGraph(ChatState)
 graph.add_node("chat_node", chat_node)
 graph.add_edge(START, "chat_node")
@@ -141,9 +126,7 @@ else:
 
 chatbot = graph.compile(checkpointer=checkpointer)
 
-# -------------------
-# 7. Helper
-# -------------------
+#Helper
 async def _alist_threads():
     all_threads = set()
     async for checkpoint in checkpointer.alist(None):

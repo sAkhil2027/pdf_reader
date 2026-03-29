@@ -40,7 +40,7 @@ if "chat_threads" not in st.session_state:
 
 add_thread(st.session_state["thread_id"])
 
-# ============================ Sidebar ============================
+# Sidebar 
 st.sidebar.title("LangGraph MCP Chatbot")
 
 if st.sidebar.button("New Chat"):
@@ -58,9 +58,9 @@ for thread_id in st.session_state["chat_threads"][::-1]:
             temp_messages.append({"role": role, "content": msg.content})
         st.session_state["message_history"] = temp_messages
 
-# ============================ Main UI ============================
+#  Main UI 
 
-# Render history
+# history
 for message in st.session_state["message_history"]:
     with st.chat_message(message["role"]):
         st.text(message["content"])
@@ -68,7 +68,7 @@ for message in st.session_state["message_history"]:
 user_input = st.chat_input("Type here")
 
 if user_input:
-    # Show user's message
+    #User's message
     st.session_state["message_history"].append({"role": "user", "content": user_input})
     with st.chat_message("user"):
         st.text(user_input)
@@ -110,7 +110,6 @@ if user_input:
                 if message_chunk == "error":
                     raise metadata
 
-                # Lazily create & update the SAME status container when any tool runs
                 if isinstance(message_chunk, ToolMessage):
                     tool_name = getattr(message_chunk, "name", "tool")
                     if status_holder["box"] is None:
